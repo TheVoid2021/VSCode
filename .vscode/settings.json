@@ -1,6 +1,15 @@
 {
+    "terminal.integrated.fontFamily": "Lucida Console",
+    "[cpp]": {
+        "files.encoding": "gbk"
+    },
+    "[c]": {
+        "files.encoding": "gbk"
+    },
     "liveServer.settings.port": 5502,
     "files.associations": {
-        "iostream": "cpp"
+        "*.cpp": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }

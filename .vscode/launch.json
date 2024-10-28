@@ -1,6 +1,5 @@
 {
     "configurations": [
-        
         {
             "name": "C/C++: gcc.exe 生成和调试活动文件",
             "type": "cppdbg",
@@ -10,7 +9,7 @@
             "stopAtEntry": false,
             "cwd": "D:\\mingw64\\bin",
             "environment": [],
-            "externalConsole": false,
+            "externalConsole": true,
             "MIMode": "gdb",
             "miDebuggerPath": "gdb.exe",
             "setupCommands": [

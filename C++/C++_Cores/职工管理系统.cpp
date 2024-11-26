@@ -245,6 +245,7 @@ public:
     }
   }
 
+  // todo 显示菜单
   void Show_Menu()
   {
     cout << "********************************************" << endl;
@@ -261,7 +262,7 @@ public:
     cout << endl;
   }
 
-  // 退出系统
+  // todo 退出系统
   void exitSystem()
   {
     cout << "欢迎下次使用" << endl;
@@ -269,7 +270,7 @@ public:
     exit(0);
   }
 
-  // 添加职工
+  // todo 添加职工
   void Add_Emp()
   {
     cout << "请输入增加职工数量： " << endl;
@@ -359,7 +360,7 @@ public:
     system("cls");
   }
 
-  // 显示职工
+  // todo 显示职工
   void Show_Emp()
   {
     if (this->m_FileIsEmpty)
@@ -379,7 +380,7 @@ public:
     system("cls");
   }
 
-  // 删除职工之前，先检查职工是否存在
+  // todo 删除职工之前，先检查职工是否存在
   int IsExist(int id)
   {
     int index = -1;
@@ -397,7 +398,7 @@ public:
     return index;
   }
 
-  // 删除职工
+  // todo 删除职工
   void Del_Emp()
   {
     if (this->m_FileIsEmpty)
@@ -434,7 +435,7 @@ public:
     system("cls");
   }
 
-  // 修改职工
+  // todo 修改职工
   void Mod_Emp()
   {
     if (this->m_FileIsEmpty)
@@ -506,7 +507,7 @@ public:
     system("cls");
   }
 
-  // 查找职工
+  // todo 查找职工
   void Find_Emp()
   {
     if (this->m_FileIsEmpty)
@@ -575,7 +576,7 @@ public:
     system("cls");
   }
 
-  // 排序职工
+  // todo 排序职工
   void Sort_Emp()
   {
     if (this->m_FileIsEmpty)
@@ -628,7 +629,7 @@ public:
     }
   }
 
-  // 清空文件
+  // todo 清空文件
   void Clean_File()
   {
     cout << "确认清空？" << endl;

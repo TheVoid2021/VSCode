@@ -41,8 +41,10 @@ class Residual(nn.Module):  # 本类已保存在d2lzh_pytorch包中方便以后�
             self.conv3 = None
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
-
-    def forward(self, X):
+        self.relu = nn.ReLU(inplace=True)
+    
+    # 残差块的表达式
+    def forward(self, X):   
         Y = F.relu(self.bn1(self.conv1(X)))
         Y = self.bn2(self.conv2(Y))
         if self.conv3:
@@ -93,3 +95,4 @@ train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size, resize=96)
 lr, num_epochs = 0.001, 5
 optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 d2l.train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+d2l.plt.show()

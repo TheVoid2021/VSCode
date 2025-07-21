@@ -8,7 +8,7 @@ import torchvision
 from torch import nn
 from d2l import torch as d2l
 
-#@save
+
 # 将cifar10_tiny数据集的下载链接和MD5值存储在d2l.DATA_HUB字典中
 # 为了便于入门，我们提供包含前1000个训练图像和5个随机测试图像的数据集的小规模样本
 d2l.DATA_HUB['cifar10_tiny'] = (d2l.DATA_URL + 'kaggle_cifar10_tiny.zip',
@@ -24,7 +24,7 @@ if demo:
 else:
     data_dir = '../data/cifar-10/'
 
-#@save
+
 # 首先，我们用以下函数读取CSV文件中的标签，它返回一个字典，该字典将文件名中不带扩展名的部分映射到其标签。
 def read_csv_labels(fname):
     """读取fname来给标签字典返回一个文件名"""
@@ -44,7 +44,7 @@ print('# 类别 :', len(set(labels.values())))
 # 由于原始的训练集有50000张图像，因此train_valid_test/train路径中将有45000张图像用于训练，
 # 而剩下5000张图像将作为路径train_valid_test/valid中的验证集。 组织数据集后，同类别的图像将被放置在同一文件夹下。
 # 我们定义一个辅助函数copyfile，它将文件复制到目标目录。
-#@save
+
 def copyfile(filename, target_dir):
     """将文件复制到目标目录"""
     # 创建目标目录，如果目录已存在则不报错
@@ -52,7 +52,7 @@ def copyfile(filename, target_dir):
     # 复制文件到目标目录
     shutil.copy(filename, target_dir)
 
-#@save
+
 def reorg_train_valid(data_dir, labels, valid_ratio):
     """将验证集从原始的训练集中拆分出来"""
     # 训练数据集中样本最少的类别中的样本数
@@ -74,7 +74,7 @@ def reorg_train_valid(data_dir, labels, valid_ratio):
                                          'train', label))
     return n_valid_per_label
 
-#@save
+
 def reorg_test(data_dir):
     """在预测期间整理测试集，以方便读取"""
     for test_file in os.listdir(os.path.join(data_dir, 'test')):

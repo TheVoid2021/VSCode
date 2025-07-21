@@ -104,60 +104,68 @@ d2l.show_images(imgs[::2] + imgs[1::2], 2, n);
 
 # 定义VOC语义分割数据集
 class VOCSegDataset(torch.utils.data.Dataset):
-    """一个用于加载VOC数据集的自定义数据集"""
+    """懒加载的 VOC 数据集，避免内存爆炸"""
 
     def __init__(self, is_train, crop_size, voc_dir):
-        # 初始化函数，传入训练标志、裁剪大小和voc目录
-        self.transform = torchvision.transforms.Normalize(
-            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        # 对图像进行归一化处理
         self.crop_size = crop_size
-        # 获取voc目录下的图像和标签
-        features, labels = read_voc_images(voc_dir, is_train=is_train)
-        # 对图像进行过滤处理
-        self.features = [self.normalize_image(feature)
-                        for feature in self.filter(features)]
-        # 对标签进行过滤处理
-        self.labels = self.filter(labels)
-        # 获取voc目录下的颜色映射到标签的映射
+        self.transform = torchvision.transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
+        txt_fname = os.path.join(voc_dir, 'ImageSets', 'Segmentation',
+                                 'train.txt' if is_train else 'val.txt')
+        with open(txt_fname, 'r') as f:
+            self.images = f.read().split()
+
+        self.voc_dir = voc_dir
         self.colormap2label = voc_colormap2label()
-        # 打印读取的图像数量
-        print('read ' + str(len(self.features)) + ' examples')
 
-    def normalize_image(self, img):
-        return self.transform(img.float() / 255)
+        # 过滤尺寸不足的图像
+        self.images = [img for img in self.images if self._is_large_enough(img)]
 
-    def filter(self, imgs):
-        return [img for img in imgs if (
-            img.shape[1] >= self.crop_size[0] and
-            img.shape[2] >= self.crop_size[1])]
+        print(f'read {len(self.images)} examples')
+
+    def _is_large_enough(self, fname):
+        img_path = os.path.join(self.voc_dir, 'JPEGImages', f'{fname}.jpg')
+        img = torchvision.io.read_image(img_path)
+        return img.shape[1] >= self.crop_size[0] and img.shape[2] >= self.crop_size[1]
 
     def __getitem__(self, idx):
-        feature, label = voc_rand_crop(self.features[idx], self.labels[idx],
-                                    *self.crop_size)
-        return (feature, voc_label_indices(label, self.colormap2label))
+        fname = self.images[idx]
+        feature = torchvision.io.read_image(os.path.join(
+            self.voc_dir, 'JPEGImages', f'{fname}.jpg'))
+        label = torchvision.io.read_image(os.path.join(
+            self.voc_dir, 'SegmentationClass', f'{fname}.png'),
+            mode=torchvision.io.image.ImageReadMode.RGB)
+
+        # 随机裁剪
+        feature, label = voc_rand_crop(feature, label, *self.crop_size)
+        feature = self.transform(feature.float() / 255)
+        label = voc_label_indices(label, self.colormap2label)
+
+        return feature, label
 
     def __len__(self):
-        return len(self.features)
+        return len(self.images)
 
-# 定义裁剪大小
-crop_size = (320, 480)
-# 加载训练集
-voc_train = VOCSegDataset(True, crop_size, voc_dir)
-# 加载测试集
-voc_test = VOCSegDataset(False, crop_size, voc_dir)
+# # 定义裁剪大小
+# crop_size = (320, 480)
+# # 加载训练集
+# voc_train = VOCSegDataset(True, crop_size, voc_dir)
+# # 加载测试集
+# voc_test = VOCSegDataset(False, crop_size, voc_dir)
 
-# 定义批量大小
-batch_size = 64
-# 加载训练集迭代器
-train_iter = torch.utils.data.DataLoader(voc_train, batch_size, shuffle=True,
-                                    drop_last=True,
-                                    num_workers=d2l.get_dataloader_workers())
-# 打印第一个批次的特征和标签形状
-for X, Y in train_iter:
-    print(X.shape)
-    print(Y.shape)
-    break
+# # 定义批量大小
+# batch_size = 64
+# # 加载训练集迭代器
+# train_iter = torch.utils.data.DataLoader(voc_train, batch_size, shuffle=True,
+#                                     drop_last=True,
+#                                     num_workers=d2l.get_dataloader_workers())
+# # 打印第一个批次的特征和标签形状
+# for X, Y in train_iter:
+#     print(X.shape)
+#     print(Y.shape)
+#     break
 
 # 加载VOC语义分割数据集
 def load_data_voc(batch_size, crop_size):
@@ -177,6 +185,21 @@ def load_data_voc(batch_size, crop_size):
         drop_last=True, num_workers=num_workers)
     # 返回训练集和测试集数据加载器
     return train_iter, test_iter
+
+def main():
+    crop_size = (320, 480)
+    batch_size = 64
+    train_iter, test_iter = load_data_voc(batch_size, crop_size)
+
+    # 打印第一个批次样本形状（测试多线程是否生效）
+    for X, Y in train_iter:
+        print("Feature shape:", X.shape)
+        print("Label shape:", Y.shape)
+        break
+
+# Windows 多线程必须使用这个入口保护！
+if __name__ == '__main__':
+    main()
 
 # 显示图像
 d2l.plt.show()

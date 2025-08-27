@@ -14,14 +14,14 @@ from d2l import torch as d2l
 pretrained_net = torchvision.models.resnet18(pretrained=True)
 list(pretrained_net.children())[-3:]
 
-# 去掉ResNet-18模型的最后两层
+# 去掉ResNet-18模型的最后两层 创建全卷积网络实例net
 net = nn.Sequential(*list(pretrained_net.children())[:-2])
 
 # 验证ResNet-18模型抽取的图像特征形状
 X = torch.rand(size=(1, 3, 320, 480))
 net(X).shape
 
-# 添加输出通道为21的卷积层
+# 使用1x1卷积层将输出通道数转换为PascalVOC2012数据集的类数(21类)。将要素地图的高度和宽度增加32倍
 num_classes = 21
 net.add_module('final_conv', nn.Conv2d(512, num_classes, kernel_size=1))
 net.add_module('transpose_conv', nn.ConvTranspose2d(num_classes, num_classes,
@@ -43,7 +43,12 @@ def bilinear_kernel(in_channels, out_channels, kernel_size):
     weight[range(in_channels), range(out_channels), :, :] = filt
     return weight
 
-# 验证转置卷积层
+"""
+双线性插值的上采样实验
+图像放大（缩放）​​：当你把一张小图片放大时，会产生新的像素点。
+这些新像素点的颜色值通常通过其周围原像素的颜色进行双线性插值​（二维的线性插值）来计算，
+使得放大后的图像不会出现严重的马赛克块。
+"""
 conv_trans = nn.ConvTranspose2d(3, 3, kernel_size=4, padding=1, stride=2,
                                 bias=False)
 conv_trans.weight.data.copy_(bilinear_kernel(3, 3, 4));
@@ -61,7 +66,7 @@ d2l.plt.imshow(img.permute(1, 2, 0));
 print('output image shape:', out_img.shape)
 d2l.plt.imshow(out_img);
 
-# 将转置卷积层初始化为双线性插值的上采样
+# 将转置卷积层初始化为双线性插值的上采样。对于卷积层，我们使用Xavier随机初始化。
 W = bilinear_kernel(num_classes, num_classes, 64)
 net.transpose_conv.weight.data.copy_(W);
 
@@ -84,7 +89,7 @@ def predict(img):
     pred = net(X.to(devices[0])).argmax(dim=1)
     return pred.reshape(pred.shape[1], pred.shape[2])
 
-# 将预测的类别映射回颜色
+# 将预测的类别映射回颜色 可视化预测的类别
 def label2image(pred):
     colormap = torch.tensor(d2l.VOC_COLORMAP, device=devices[0])
     X = pred.long()
